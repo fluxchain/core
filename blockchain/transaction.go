@@ -34,7 +34,7 @@ type Output struct {
 func (tx Transaction) Hash() (crypto.Hash, error) {
 
 	// TODO : Add serialization routines
-	crypto.NilHash()
+	return crypto.NilHash(), nil
 }
 
 // Equals compares two transaction 
