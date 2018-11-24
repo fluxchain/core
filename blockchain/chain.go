@@ -8,12 +8,13 @@ import (
 	"log"
 )
 
+// Blockchain type
 type Blockchain struct {
 	Blocks []*Block `json:"blocks"`
 	Tip    *Block   `json:"-"`
 }
 
-// Adds a block to the chain if it passes some validation.
+// AddBlock adds a block to the chain if it passes some validation.
 func (b *Blockchain) AddBlock(block *Block) error {
 	// ensure the prevhash this block is referring to is actually the tip
 	// with exception of ofcourse the genesis block.
@@ -47,7 +48,7 @@ func (b *Blockchain) AddBlock(block *Block) error {
 	return nil
 }
 
-// Validates the to-be-added block, currently only checks the validity of the
+// ValidateBlock the to-be-added block, currently only checks the validity of the
 // PoW.
 func (b *Blockchain) ValidateBlock(block *Block) error {
 	// check if PoW checks out
@@ -59,14 +60,14 @@ func (b *Blockchain) ValidateBlock(block *Block) error {
 	return nil
 }
 
-// Serializes the chain to JSON and writes it to the passed in writer.
+// Serialize the chain to JSON and writes it to the passed in writer.
 func (b *Blockchain) Serialize(w io.Writer) error {
 	enc := json.NewEncoder(w)
 
 	return enc.Encode(b)
 }
 
-// Creates an instance of a new chain.
+// NewBlockchain creates an instance of a new chain.
 func NewBlockchain() *Blockchain {
 	return &Blockchain{}
 }
