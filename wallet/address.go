@@ -1,66 +1,73 @@
-// Copyright 2018 The Cloq Authors
-// This file is part of the cloq-core library .
-//
-// The cloq-core library is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The cloq-core library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the cloq-core library. If not, see <http://www.gnu.org/licenses/>.
-
 package wallet
 
-// Flux addresses are zbase32 encoded
-// The Operation is done like this :
-// Hash := Blake2(PublicKey)
-// ShortHash := Blake160(Hash)
-// Checksum := 4 last bytes of Blake2(ShortHash)
-// zbase32(Mainnet||ShortHash||Checksum)
-
 import (
-	"github.com/fluxchain/core/crypto"
-	"github.com/tv42/zbase32"
+	"bytes"
+	"crypto/sha256"
+	"log"
+
+	"golang.org/x/crypto/ripemd160"
+
+	"github.com/m0t0k1ch1/base58"
 )
 
-// P2PKH transactions are paid to the shorthash
-// Meaning that only he who owns a publickey that Blake160(Blake2(PK)) can use it
+const CHECKSUM_LENGTH = 4
 
-var (
-	// Mainnet is the identifier for mainnet addresses
-	Mainnet = []byte{0x29, 0x7a} // starts with fff
-	// Testnet is the identifier for testnet addresses
-	Testnet = []byte{0xfb, 0xef} // starts with 9xz
+var b58 = base58.NewBitcoinBase58()
 
-)
-
-func genAddr(publickey crypto.PublicKey) []byte {
-
-	pkhash := crypto.Blake2(publickey[:])
-	shorthash := crypto.Blake160(pkhash)
-	checksum := crypto.Blake2(shorthash)
-	checksum = checksum[len(checksum)-4:]
-
-	baddr := append(Testnet, shorthash...)
-	baddr = append(baddr, checksum...)
-
-	var out []byte
-
-	zbase32.Encode(out, baddr)
-
-	return out
+type Address struct {
+	PublicKey []byte `json:"-"`
+	Checksum  []byte `json:"-"`
+	String    string `json:"string"`
 }
 
-// GenAddr generates a new Flux address
-func GenAddr(publickey []byte) string {
+func (a *Address) Valid() bool {
+	decoded, err := b58.DecodeString(a.String)
+	if err != nil {
+		log.Panic(err)
+	}
 
-	addr := genAddr(publickey)
+	publicHash := decoded[:len(decoded)-CHECKSUM_LENGTH]
+	actualChecksum := grabChecksum(decoded)
+	expectedChecksum := calculateChecksum(publicHash)
 
-	return string(addr)
+	return bytes.Compare(actualChecksum, expectedChecksum) == 0
+}
 
+// Create a new address instance from a public key,
+func NewAddressFromPublicKey(publicKey []byte) *Address {
+	sha := sha256.Sum256(publicKey)
+
+	hash := ripemd160.New()
+	_, err := hash.Write(sha[:])
+	if err != nil {
+		log.Panic(err)
+	}
+	publicHash := hash.Sum(nil)
+
+	checksum := calculateChecksum(publicHash)
+
+	address, err := b58.EncodeToString(append(publicHash, checksum...))
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return &Address{
+		PublicKey: publicKey,
+		String:    address}
+}
+
+// Create a new address instance from an address string
+func NewAddressFromString(address string) *Address {
+	return &Address{String: address}
+}
+
+func grabChecksum(a []byte) []byte {
+	return a[len(a)-CHECKSUM_LENGTH:]
+}
+
+func calculateChecksum(data []byte) []byte {
+	first := sha256.Sum256(data)
+	second := sha256.Sum256(first[:])
+
+	return second[:CHECKSUM_LENGTH]
 }
