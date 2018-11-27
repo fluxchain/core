@@ -1,79 +1,86 @@
 package blockchain
 
 import (
+	"crypto/sha256"
+	"encoding/binary"
+	"time"
+
 	"github.com/cbergoon/merkletree"
-	"github.com/fluxchain/core/crypto"
-	"golang.org/x/crypto/ed25519"
+	"github.com/fluxchain/core/util"
+	"github.com/fluxchain/core/wallet"
 )
 
-// Transaction object
 type Transaction struct {
-	Inputs     []*Input           `json:"inputs"`
-	Outputs    []*Output          `json:"outputs"`
-	Kernel     bool               `json:"kernel"`
-	IOHash     crypto.Hash        `json:"hash"`
-	Signatures []crypto.Signature `json:"signature"`
+	Inputs      []*Input  `json:"inputs"`
+	Outputs     []*Output `json:"outputs"`
+	Description string    `json:"description"`
+	Hash        util.Hash `json:"hash"`
+	Timestamp   time.Time `json:"timestamp"`
 }
 
-// Input are spent coins
 type Input struct {
-	TxID      crypto.Hash      `json:"txid"`
-	Index     uint64           `json:"index"`
-	PublicKey crypto.PublicKey `json:"publickey"`
+	Amount      uint32    `json:"amount"`
+	Transaction util.Hash `json:"transaction"`
+	PublicKey   []byte    `json:"publickey"`
+	Signature   []byte    `json:"signature"`
 }
 
-// Output are newly created coins
 type Output struct {
-	Value      uint64      `json:"amount"`
-	PubKeyHash crypto.Hash `json:"pubkeyhash"`
-	Locktime   uint64      `json:"locktime"`
+	Amount    uint32          `json:"amount"`
+	Recipient *wallet.Address `json:"recipient"`
 }
 
-// Hash calculates the transaction inner hash by concatting the
-// inputs and outputs this is verified hash the one we sign different from txid which is h(TX)
-func (tx Transaction) Hash() (crypto.Hash, error) {
+// Calculates the transactions hash by concatting the binary buffers of
+// the tx description, the unix timestamp, the inputs their amount, public and
+// signature and the outputs their amount and recipient address. And passing that
+// through a round of SHA256.
+func (tx Transaction) CalculateHash() ([]byte, error) {
+	hash := sha256.New()
+	hash.Write([]byte(tx.Description))
 
-	// TODO : Add serialization routines
-	return crypto.NilHash(), nil
+	// Put the transaction UNIX timestamp into the buffer as BE uint64.
+	tsBuf := make([]byte, 8)
+	binary.BigEndian.PutUint64(tsBuf, uint64(tx.Timestamp.Unix()))
+	hash.Write(tsBuf)
+
+	for _, input := range tx.Inputs {
+		hash.Write(input.Transaction)
+		buf := make([]byte, 4)
+		binary.BigEndian.PutUint32(buf, input.Amount)
+		hash.Write(buf)
+		hash.Write(input.PublicKey)
+		hash.Write(input.Signature)
+	}
+
+	for _, output := range tx.Outputs {
+		buf := make([]byte, 4)
+		binary.BigEndian.PutUint32(buf, output.Amount)
+		hash.Write(buf)
+
+		hash.Write([]byte(output.Recipient.String))
+	}
+
+	md := hash.Sum(nil)
+	return md, nil
 }
 
-// Equals compares two transaction 
-func (tx Transaction) Equals(other merkletree.Content) (bool, error) {
+// Figures out if two transactions are the same, used for the merkletree lib.
+func (t Transaction) Equals(other merkletree.Content) (bool, error) {
 	return t.Hash.String() == other.(Transaction).Hash.String(), nil
 }
 
-// NewKernelInput returns the default input for a kernel transaction .
-// Kernel fields can be modified to help find a nonce for the proof of work .
-func NewKernelInput() *Input {
+// Creates a coinbase transaction which requires no inputs.
+func NewCoinbase(recipient string, amount uint32, timestamp time.Time) (*Transaction, error) {
+	var err error
+	address := wallet.NewAddressFromString(recipient)
 
-	var zeroHash c.Hash
-	var pk ed25519.PublicKey
-
-	return &Input{
-		TxHash:    zeroHash,
-		Index:     0,
-		PublicKey: pk,
+	output := &Output{
+		Recipient: address,
+		Amount:    amount,
 	}
 
-}
+	tx := &Transaction{Outputs: []*Output{output}, Timestamp: timestamp}
+	tx.Hash, err = tx.CalculateHash()
 
-// NewKernel creates a new kernel transaction
-func NewKernel(outputs []*Output) *Transaction {
-
-	kerinputs := []*Input{NewKernelInput()}
-	return &Transaction{Kernel: true,
-		Inputs:  kerinputs,
-		Outputs: outputs}
-}
-
-// NewTransaction creates a new regular transaction
-func NewTransaction(inputs []*Input, outputs []*Output, sigs []*crypto.Signature) *Transaction {
-	return &Transaction{
-		Version:    P2PKH,
-		Kernel:     false,
-		IOHash:     c.NilHash(),
-		Inputs:     inputs,
-		Outputs:    outputs,
-		Signatures: sigs,
-	}
+	return tx, err
 }

@@ -5,10 +5,9 @@ import (
 	"time"
 )
 
-// Block is the basic building block of a chain
 type Block struct {
-	Header *Header `json:"header"`
-	Body   *Body   `json:"transactions"`
+	Header *BlockHeader `json:"header"`
+	Body   *BlockBody   `json:"transactions"`
 }
 
 func (b *Block) String() string {
@@ -17,9 +16,9 @@ func (b *Block) String() string {
 		b.Header.Height)
 }
 
-// NewBlock creates a new block, creates the merkletree and creates a valid PoW.
-func NewBlock(prevblock *Block, timestamp time.Time, body *Body) *Block {
-	header := &Header{
+// Creates a new block, creates the merkletree and creates a valid PoW.
+func NewBlock(prevblock *Block, timestamp time.Time, body *BlockBody) *Block {
+	header := &BlockHeader{
 		Height:    prevblock.Header.Height + 1,
 		PrevHash:  prevblock.Header.Hash,
 		Timestamp: timestamp,
@@ -35,9 +34,9 @@ func NewBlock(prevblock *Block, timestamp time.Time, body *Body) *Block {
 	}
 }
 
-// NewGenesis creates a new genesis block, which doesn't have a previous block.
-func NewGenesis(timestamp time.Time, body *Body) *Block {
-	header := &Header{
+// Creates a new genesis block, which doesn't have a previous block.
+func NewGenesisBlock(timestamp time.Time, body *BlockBody) *Block {
+	header := &BlockHeader{
 		Height:    0,
 		PrevHash:  []byte{},
 		Timestamp: timestamp,
@@ -45,6 +44,7 @@ func NewGenesis(timestamp time.Time, body *Body) *Block {
 
 	// TODO make this less implicit to implementing methods.
 	header.MerkleRoot = body.CalculateMerkle().MerkleRoot()
+	header.Hash = header.GeneratePOW()
 
 	return &Block{
 		Header: header,
