@@ -18,7 +18,7 @@ func main() {
 		panic(err)
 	}
 
-	genesisBody := blockchain.NewBlockBody()
+	genesisBody := blockchain.NewBody()
 	err = genesisBody.AddTransaction(coinbase)
 	if err != nil {
 		panic(err)
@@ -30,7 +30,7 @@ func main() {
 		panic(err)
 	}
 
-	body := blockchain.NewBlockBody()
+	body := blockchain.NewBody()
 	coinbase, err = blockchain.NewCoinbase("rsyBe3AcPF61VFMi48phGcfsLyvho4mr", 1500, time.Now())
 	if err != nil {
 		panic(err)
