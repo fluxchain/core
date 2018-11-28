@@ -21,3 +21,20 @@ func (h Hash) MarshalJSON() ([]byte, error) {
 
 	return data, nil
 }
+
+func (h *Hash) UnmarshalJSON(data []byte) error {
+	var buf string
+	var err error
+
+	err = json.Unmarshal(data, &buf)
+	if err != nil {
+		return err
+	}
+
+	*h, err = hex.DecodeString(buf)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

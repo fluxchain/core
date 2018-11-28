@@ -33,3 +33,24 @@ func TestAddressJsonMarshal(t *testing.T) {
 		})
 	}
 }
+
+func TestAddressJsonUnmarshal(t *testing.T) {
+	for _, tc := range marshalCases {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			hash := &Hash{}
+
+			data := []byte("\"" + tc.Encoded + "\"")
+			err := json.Unmarshal(data, hash)
+			if err != nil {
+				t.Errorf("could not deserialize hash, json error: %v", err.Error())
+			}
+
+			if hash.String() != tc.Encoded {
+				t.Errorf("decoded hash [\"%v\"] does not seem identical to expected output [%v]",
+					hash.String(),
+					tc.Encoded)
+			}
+		})
+	}
+}
