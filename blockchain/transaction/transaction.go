@@ -18,18 +18,6 @@ type Transaction struct {
 	Timestamp   time.Time `json:"timestamp"`
 }
 
-type Input struct {
-	Amount      uint32    `json:"amount"`
-	Transaction util.Hash `json:"transaction"`
-	PublicKey   []byte    `json:"publickey"`
-	Signature   []byte    `json:"signature"`
-}
-
-type Output struct {
-	Amount    uint32          `json:"amount"`
-	Recipient *wallet.Address `json:"recipient"`
-}
-
 // Calculates the transactions hash by concatting the binary buffers of
 // the tx description, the unix timestamp, the inputs their amount, public and
 // signature and the outputs their amount and recipient address. And passing that
