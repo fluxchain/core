@@ -5,22 +5,22 @@ import (
 	"encoding/binary"
 	"time"
 
-	"github.com/fluxchain/core/util"
+	c "github.com/fluxchain/core/crypto"
 )
 
 type Header struct {
 	Height     uint32    `json:"height"`
-	Hash       util.Hash `json:"hash"`
-	PrevHash   util.Hash `json:"prevhash"`
+	Hash       c.Hash    `json:"hash"`
+	PrevHash   c.Hash    `json:"prevhash"`
 	Timestamp  time.Time `json:"timestamp"`
-	MerkleRoot util.Hash `json:"merkleroot"`
+	MerkleRoot c.Hash    `json:"merkleroot"`
 	Nonce      uint64    `json:"nonce"`
 }
 
 // Calculates the blockheader hash by concatting the previous blockhash, the
 // merlkeroot, the height as a BE uint64 and the nonce as a BE uint64. And
 // passing it through a round of SHA256
-func (h Header) CalculateHash() util.Hash {
+func (h Header) CalculateHash() c.Hash {
 	hash := sha256.New()
 
 	hash.Write(h.PrevHash)
@@ -41,7 +41,7 @@ func (h Header) CalculateHash() util.Hash {
 // Generates a proof-of-work by simply generating a blockhash and checking if
 // the first 4 characters are all zeroes. Need to rework this.
 func (h *Header) GeneratePOW() []byte {
-	var hash util.Hash
+	var hash c.Hash
 
 	for {
 		hash = h.CalculateHash()
