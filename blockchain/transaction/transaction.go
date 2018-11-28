@@ -1,4 +1,4 @@
-package blockchain
+package transaction
 
 import (
 	"crypto/sha256"

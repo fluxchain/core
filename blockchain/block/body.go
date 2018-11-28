@@ -1,12 +1,13 @@
-package blockchain
+package block
 
 import (
 	"fmt"
 
 	"github.com/cbergoon/merkletree"
+	"github.com/fluxchain/core/blockchain/transaction"
 )
 
-type Body []*Transaction
+type Body []*transaction.Transaction
 
 // Creates a merlketree from the transaction hashes in the block.
 func (b *Body) CalculateMerkle() *merkletree.MerkleTree {
@@ -23,7 +24,7 @@ func (b *Body) CalculateMerkle() *merkletree.MerkleTree {
 
 // Adds the transaction to the block body, after a given set of validation
 // rules.
-func (b *Body) AddTransaction(transaction *Transaction) error {
+func (b *Body) AddTransaction(transaction *transaction.Transaction) error {
 	if err := b.ValidateTransaction(transaction); err != nil {
 		return err
 	}
@@ -33,7 +34,7 @@ func (b *Body) AddTransaction(transaction *Transaction) error {
 	return nil
 }
 
-func (b *Body) ValidateTransaction(tx *Transaction) error {
+func (b *Body) ValidateTransaction(tx *transaction.Transaction) error {
 	for _, output := range tx.Outputs {
 		if !output.Recipient.Valid() {
 			return fmt.Errorf("Transaction address is invalid %v", output.Recipient.String)

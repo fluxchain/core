@@ -5,33 +5,35 @@ import (
 	"time"
 
 	"github.com/fluxchain/core/blockchain"
+	"github.com/fluxchain/core/blockchain/block"
+	"github.com/fluxchain/core/blockchain/transaction"
 )
 
 func main() {
 	var err error
-	var coinbase *blockchain.Transaction
+	var coinbase *transaction.Transaction
 
 	mainchain := blockchain.NewBlockchain()
 
-	coinbase, err = blockchain.NewCoinbase("rsyBe3AcPF61VFMi48phGcfsLyvho4mr", 2000, time.Now())
+	coinbase, err = transaction.NewCoinbase("rsyBe3AcPF61VFMi48phGcfsLyvho4mr", 2000, time.Now())
 	if err != nil {
 		panic(err)
 	}
 
-	genesisBody := blockchain.NewBody()
+	genesisBody := block.NewBody()
 	err = genesisBody.AddTransaction(coinbase)
 	if err != nil {
 		panic(err)
 	}
 
-	genesisBlock := blockchain.NewGenesisBlock(time.Now(), genesisBody)
+	genesisBlock := block.NewGenesisBlock(time.Now(), genesisBody)
 	err = mainchain.AddBlock(genesisBlock)
 	if err != nil {
 		panic(err)
 	}
 
-	body := blockchain.NewBody()
-	coinbase, err = blockchain.NewCoinbase("rsyBe3AcPF61VFMi48phGcfsLyvho4mr", 1500, time.Now())
+	body := block.NewBody()
+	coinbase, err = transaction.NewCoinbase("rsyBe3AcPF61VFMi48phGcfsLyvho4mr", 1500, time.Now())
 	if err != nil {
 		panic(err)
 	}
@@ -41,7 +43,7 @@ func main() {
 		panic(err)
 	}
 
-	nextBlock := blockchain.NewBlock(genesisBlock, time.Now(), body)
+	nextBlock := block.NewBlock(genesisBlock, time.Now(), body)
 	err = mainchain.AddBlock(nextBlock)
 	if err != nil {
 		panic(err)
