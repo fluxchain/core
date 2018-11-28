@@ -1,4 +1,4 @@
-package blockchain
+package transaction
 
 import (
 	"crypto/sha256"
@@ -6,28 +6,16 @@ import (
 	"time"
 
 	"github.com/cbergoon/merkletree"
-	"github.com/fluxchain/core/util"
+	"github.com/fluxchain/core/crypto"
 	"github.com/fluxchain/core/wallet"
 )
 
 type Transaction struct {
-	Inputs      []*Input  `json:"inputs"`
-	Outputs     []*Output `json:"outputs"`
-	Description string    `json:"description"`
-	Hash        util.Hash `json:"hash"`
-	Timestamp   time.Time `json:"timestamp"`
-}
-
-type Input struct {
-	Amount      uint32    `json:"amount"`
-	Transaction util.Hash `json:"transaction"`
-	PublicKey   []byte    `json:"publickey"`
-	Signature   []byte    `json:"signature"`
-}
-
-type Output struct {
-	Amount    uint32          `json:"amount"`
-	Recipient *wallet.Address `json:"recipient"`
+	Inputs      []*Input    `json:"inputs"`
+	Outputs     []*Output   `json:"outputs"`
+	Description string      `json:"description"`
+	Hash        crypto.Hash `json:"hash"`
+	Timestamp   time.Time   `json:"timestamp"`
 }
 
 // Calculates the transactions hash by concatting the binary buffers of

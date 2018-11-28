@@ -6,54 +6,56 @@ import (
 	"fmt"
 	"io"
 	"log"
+
+	"github.com/fluxchain/core/blockchain/block"
 )
 
 type Blockchain struct {
-	Blocks []*Block `json:"blocks"`
-	Tip    *Block   `json:"-"`
+	Blocks []*block.Block `json:"blocks"`
+	Tip    *block.Block   `json:"-"`
 }
 
 // Adds a block to the chain if it passes some validation.
-func (b *Blockchain) AddBlock(block *Block) error {
+func (b *Blockchain) AddBlock(currentBlock *block.Block) error {
 	// ensure the prevhash this block is referring to is actually the tip
 	// with exception of ofcourse the genesis block.
-	prevHash := hex.EncodeToString(block.Header.PrevHash)
-	if block.Header.Height != 0 &&
+	prevHash := hex.EncodeToString(currentBlock.Header.PrevHash)
+	if currentBlock.Header.Height != 0 &&
 		hex.EncodeToString(b.Tip.Header.Hash) != prevHash {
 		return fmt.Errorf(
 			"block has parent that isn't the current tip block: %v",
-			block.Header.Hash)
+			currentBlock.Header.Hash)
 	}
 
 	// ensure the height is that of the previous block +1 with the obvious
 	// exception of the genesis block
-	if b.Tip != nil && block.Header.Height != (b.Tip.Header.Height+1) {
+	if b.Tip != nil && currentBlock.Header.Height != (b.Tip.Header.Height+1) {
 		return fmt.Errorf(
 			"block %v being added has an unexpected height. expected %v, got %v",
-			block.Header.Hash,
+			currentBlock.Header.Hash,
 			b.Tip.Header.Height+1,
-			block.Header.Height)
+			currentBlock.Header.Height)
 	}
 
 	// Validate the block itself
-	if err := b.ValidateBlock(block); err != nil {
+	if err := b.ValidateBlock(currentBlock); err != nil {
 		return err
 	}
 
-	log.Printf("adding block: %v", block)
-	b.Blocks = append(b.Blocks, block)
-	b.Tip = block
+	log.Printf("adding block: %v", currentBlock)
+	b.Blocks = append(b.Blocks, currentBlock)
+	b.Tip = currentBlock
 
 	return nil
 }
 
 // Validates the to-be-added block, currently only checks the validity of the
 // PoW.
-func (b *Blockchain) ValidateBlock(block *Block) error {
+func (b *Blockchain) ValidateBlock(currentBlock *block.Block) error {
 	// check if PoW checks out
-	if !block.Header.ValidatePOW() {
+	if !currentBlock.Header.ValidatePOW() {
 		return fmt.Errorf("POW seems invalid for block %v",
-			block.Header.Hash.String())
+			currentBlock.Header.Hash.String())
 	}
 
 	return nil
