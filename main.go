@@ -7,11 +7,14 @@ import (
 	"github.com/fluxchain/core/blockchain"
 	"github.com/fluxchain/core/blockchain/block"
 	"github.com/fluxchain/core/blockchain/transaction"
+	"github.com/fluxchain/core/parameters"
 )
 
 func main() {
 	var err error
 	var coinbase *transaction.Transaction
+
+	parameters.Set(parameters.Main)
 
 	mainchain := blockchain.NewBlockchain()
 
