@@ -53,7 +53,12 @@ func (b *Blockchain) AddBlock(currentBlock *block.Block) error {
 // PoW.
 func (b *Blockchain) ValidateBlock(currentBlock *block.Block) error {
 	// check if PoW checks out
-	if !currentBlock.Header.ValidatePOW() {
+	powValid, err := currentBlock.Header.ValidatePOW()
+	if err != nil {
+		return err
+	}
+
+	if !powValid {
 		return fmt.Errorf("POW seems invalid for block %v",
 			currentBlock.Header.Hash.String())
 	}
