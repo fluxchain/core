@@ -17,12 +17,9 @@ func (b *Block) String() string {
 }
 
 // Creates a new block, creates the merkletree and creates a valid PoW.
-func NewBlock(prevblock *Block, timestamp time.Time, body *Body) *Block {
-	header := &Header{
-		Height:    prevblock.Header.Height + 1,
-		PrevHash:  prevblock.Header.Hash,
-		Timestamp: timestamp,
-	}
+func NewBlock(prevBlock *Block, timestamp time.Time, body *Body) *Block {
+	prevHeader := prevBlock.Header
+	header := NewHeader(prevHeader.Hash, prevHeader.Height+1, timestamp)
 
 	// TODO make this less implicit to implementing methods.
 	header.MerkleRoot = body.CalculateMerkle().MerkleRoot()
@@ -36,11 +33,7 @@ func NewBlock(prevblock *Block, timestamp time.Time, body *Body) *Block {
 
 // Creates a new genesis block, which doesn't have a previous block.
 func NewGenesisBlock(timestamp time.Time, body *Body) *Block {
-	header := &Header{
-		Height:    0,
-		PrevHash:  []byte{},
-		Timestamp: timestamp,
-	}
+	header := NewHeader([]byte{}, 0, timestamp)
 
 	// TODO make this less implicit to implementing methods.
 	header.MerkleRoot = body.CalculateMerkle().MerkleRoot()
