@@ -9,7 +9,7 @@ import (
 )
 
 type Header struct {
-	Height     uint32    `json:"height"`
+	Height     uint64    `json:"height"`
 	Hash       c.Hash    `json:"hash"`
 	PrevHash   c.Hash    `json:"prevhash"`
 	Timestamp  time.Time `json:"timestamp"`
@@ -39,4 +39,12 @@ func (h Header) CalculateHash() (c.Hash, error) {
 
 	md := hash.Sum(nil)
 	return md, nil
+}
+
+func NewHeader(prevHash c.Hash, height uint64, timestamp time.Time) *Header {
+	return &Header{
+		Height:    height,
+		PrevHash:  prevHash,
+		Timestamp: timestamp,
+	}
 }
