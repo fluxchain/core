@@ -6,6 +6,9 @@ import (
 	c "github.com/fluxchain/core/crypto"
 )
 
+// This is viacoin's minimum difficulty.
+var MINIMAL_POW = [32]byte{0x00, 0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
+
 // Generates a proof-of-work by simply generating a blockhash and checking if
 // the first 4 characters are all zeroes. Need to rework this.
 func (h *Header) GeneratePOW() []byte {
@@ -18,9 +21,7 @@ func (h *Header) GeneratePOW() []byte {
 			panic(err)
 		}
 
-		hashStr := hash.String()
-
-		if hashStr[:4] == "0000" {
+		if result := bytes.Compare(hash, MINIMAL_POW[:]); result <= 0 {
 			break
 		}
 
