@@ -8,9 +8,7 @@ import (
 	bolt "go.etcd.io/bbolt"
 )
 
-type blockRepository struct{}
-
-func (r *blockRepository) Store(b *block.Block) error {
+func StoreBlock(b *block.Block) error {
 	serialized, err := serializeBlock(b)
 	if err != nil {
 		return err
@@ -26,7 +24,7 @@ func (r *blockRepository) Store(b *block.Block) error {
 	return err
 }
 
-func (r *blockRepository) Get(hash c.Hash) (*block.Block, error) {
+func GetBlock(hash c.Hash) (*block.Block, error) {
 	var result *block.Block
 	err := db.View(func(tx *bolt.Tx) error {
 		var err error
@@ -58,5 +56,3 @@ func deserializeBlock(data []byte) (*block.Block, error) {
 
 	return result, nil
 }
-
-var BlockRepository *blockRepository

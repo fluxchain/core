@@ -11,7 +11,7 @@ import (
 
 func setupTestCase(t *testing.T) func(t *testing.T) {
 	parameters.Set(parameters.UnitTest)
-	err := OpenDatabase("database.db")
+	err := OpenDatabase("../unittest.db")
 	if err != nil {
 		t.Error(err)
 	}
@@ -30,11 +30,17 @@ func TestStoringBlock(t *testing.T) {
 		t.Error(err)
 	}
 
-	b := block.NewGenesisBlock(time.Now(), &block.Body{coinbase})
-	err = BlockRepository.Store(b)
+	initialBlock := block.NewGenesisBlock(time.Now(), &block.Body{coinbase})
+	err = StoreBlock(initialBlock)
 	if err != nil {
 		t.Error(err)
 	}
 
-	BlockRepository.Get(b.Header.Hash)
+	var resultBlock *block.Block
+	resultBlock, err = GetBlock(initialBlock.Header.Hash)
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Errorf("%#v", resultBlock)
 }
