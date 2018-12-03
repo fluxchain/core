@@ -6,6 +6,7 @@ import (
 
 	"github.com/fluxchain/core/blockchain"
 	"github.com/fluxchain/core/blockchain/block"
+	"github.com/fluxchain/core/blockchain/storage"
 	"github.com/fluxchain/core/blockchain/transaction"
 	"github.com/fluxchain/core/parameters"
 )
@@ -13,6 +14,17 @@ import (
 func main() {
 	var err error
 	var coinbase *transaction.Transaction
+
+	err = storage.OpenDatabase("database.db")
+	if err != nil {
+		panic(err)
+	}
+	defer storage.CloseDatabase()
+
+	err = storage.Setup()
+	if err != nil {
+		panic(err)
+	}
 
 	parameters.Set(parameters.Main)
 
@@ -34,6 +46,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	storage.BlockRepository.Store(genesisBlock)
+
+	storage.BlockRepository.Get(genesisBlock.Header.Hash)
 
 	body := block.NewBody()
 	coinbase, err = transaction.NewCoinbase("rsyBe3AcPF61VFMi48phGcfsLyvho4mr", 1500, time.Now())
