@@ -42,6 +42,26 @@ func GetBlock(hash c.Hash) (*block.Block, error) {
 	return result, err
 }
 
+func LastBlock() (*block.Block, error) {
+	var result *block.Block
+	err := db.View(func(tx *bolt.Tx) error {
+		var err error
+		b := tx.Bucket([]byte(BLOCK_BUCKET))
+
+		c := b.Cursor()
+		_, data := c.Last()
+
+		result, err = deserializeBlock(data)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return result, err
+}
+
 func serializeBlock(b *block.Block) ([]byte, error) {
 	return json.Marshal(b)
 }
