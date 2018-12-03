@@ -22,7 +22,7 @@ func CloseDatabase() {
 	db.Close()
 }
 
-func Setup() error {
+func Migrate() error {
 	var err error
 	err = db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte(BLOCK_BUCKET))

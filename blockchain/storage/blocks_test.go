@@ -13,7 +13,7 @@ import (
 func setupTestCase(t *testing.T) func(t *testing.T) {
 	parameters.Set(parameters.UnitTest)
 	err := OpenDatabase("../../unittest.db")
-	Setup()
+	Migrate()
 
 	if err != nil {
 		t.Error(err)
