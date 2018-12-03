@@ -7,6 +7,8 @@ import (
 
 	"github.com/fluxchain/core/blockchain/block"
 	"github.com/fluxchain/core/blockchain/transaction"
+	"github.com/fluxchain/core/consensus"
+	c "github.com/fluxchain/core/crypto"
 	"github.com/fluxchain/core/parameters"
 )
 
@@ -73,12 +75,18 @@ func TestStoringAndGettingBlock(t *testing.T) {
 }
 
 func mockGenesisBlock() (*block.Block, error) {
+	var hash c.Hash
 	coinbase, err := transaction.NewCoinbase("rsyBe3AcPF61VFMi48phGcfsLyvho4mr", 2000, time.Now())
 	if err != nil {
 		return nil, err
 	}
 
 	result := block.NewGenesisBlock(time.Now(), &block.Body{coinbase})
+	hash, err = consensus.GeneratePoW(result.Header, parameters.Current().MinimumPoW)
+	if err != nil {
+		panic(err)
+	}
+	result.Header.Hash = hash
 
 	return result, nil
 }
