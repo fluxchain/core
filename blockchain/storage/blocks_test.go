@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"bytes"
 	"testing"
 	"time"
 
@@ -11,7 +12,9 @@ import (
 
 func setupTestCase(t *testing.T) func(t *testing.T) {
 	parameters.Set(parameters.UnitTest)
-	err := OpenDatabase("../unittest.db")
+	err := OpenDatabase("../../unittest.db")
+	Setup()
+
 	if err != nil {
 		t.Error(err)
 	}
@@ -25,22 +28,57 @@ func TestStoringBlock(t *testing.T) {
 	teardown := setupTestCase(t)
 	defer teardown(t)
 
-	coinbase, err := transaction.NewCoinbase("rsyBe3AcPF61VFMi48phGcfsLyvho4mr", 2000, time.Now())
+	mockBlock, err := mockGenesisBlock()
 	if err != nil {
 		t.Error(err)
 	}
 
-	initialBlock := block.NewGenesisBlock(time.Now(), &block.Body{coinbase})
-	err = StoreBlock(initialBlock)
+	err = StoreBlock(mockBlock)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestStoringAndGettingBlock(t *testing.T) {
+	teardown := setupTestCase(t)
+	defer teardown(t)
+
+	mockBlock, err := mockGenesisBlock()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = StoreBlock(mockBlock)
 	if err != nil {
 		t.Error(err)
 	}
 
 	var resultBlock *block.Block
-	resultBlock, err = GetBlock(initialBlock.Header.Hash)
+	resultBlock, err = GetBlock(mockBlock.Header.Hash)
 	if err != nil {
 		t.Error(err)
 	}
 
-	t.Errorf("%#v", resultBlock)
+	if bytes.Compare(mockBlock.Header.Hash, resultBlock.Header.Hash) != 0 {
+		t.Fatalf("block hash of origin and result block are not the same! original: %s, result: %s",
+			mockBlock.Header.Hash,
+			resultBlock.Header.Hash)
+	}
+
+	if mockBlock.Header.Height != resultBlock.Header.Height {
+		t.Fatalf("block height of origin and result block are not the same! original: %#v, result: %#v",
+			mockBlock.Header.Height,
+			resultBlock.Header.Height)
+	}
+}
+
+func mockGenesisBlock() (*block.Block, error) {
+	coinbase, err := transaction.NewCoinbase("rsyBe3AcPF61VFMi48phGcfsLyvho4mr", 2000, time.Now())
+	if err != nil {
+		return nil, err
+	}
+
+	result := block.NewGenesisBlock(time.Now(), &block.Body{coinbase})
+
+	return result, nil
 }
