@@ -21,9 +21,7 @@ func NewBlock(prevBlock *Block, timestamp time.Time, body *Body) *Block {
 	prevHeader := prevBlock.Header
 	header := NewHeader(prevHeader.Hash, prevHeader.Height+1, timestamp)
 
-	// TODO make this less implicit to implementing methods.
 	header.MerkleRoot = body.CalculateMerkle().MerkleRoot()
-	header.Hash = header.GeneratePOW()
 
 	return &Block{
 		Header: header,
@@ -35,9 +33,7 @@ func NewBlock(prevBlock *Block, timestamp time.Time, body *Body) *Block {
 func NewGenesisBlock(timestamp time.Time, body *Body) *Block {
 	header := NewHeader([]byte{}, 0, timestamp)
 
-	// TODO make this less implicit to implementing methods.
 	header.MerkleRoot = body.CalculateMerkle().MerkleRoot()
-	header.Hash = header.GeneratePOW()
 
 	return &Block{
 		Header: header,

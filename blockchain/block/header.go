@@ -1,6 +1,8 @@
 package block
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/binary"
 	"time"
 
@@ -26,19 +28,33 @@ func (h Header) CalculateHash() (c.Hash, error) {
 		return nil, err
 	}
 
-	hash.Write(h.PrevHash)
-	hash.Write(h.MerkleRoot)
-
-	tsBuf := make([]byte, 8)
-	binary.BigEndian.PutUint64(tsBuf, uint64(h.Height))
-	hash.Write(tsBuf)
-
-	tsBuf = make([]byte, 8)
-	binary.BigEndian.PutUint64(tsBuf, uint64(h.Nonce))
-	hash.Write(tsBuf)
+	serialized, err := h.SerializeForProof()
+	if err != nil {
+		return nil, err
+	}
+	hash.Write(serialized)
 
 	md := hash.Sum(nil)
 	return md, nil
+}
+
+func (h *Header) IncrementNonce() {
+	h.Nonce = h.Nonce + 1
+}
+
+func (h Header) SerializeForProof() ([]byte, error) {
+	var result bytes.Buffer
+	buffer := bufio.NewWriter(&result)
+
+	buffer.Write(h.PrevHash)
+	buffer.Write(h.MerkleRoot)
+
+	binary.Write(buffer, binary.BigEndian, uint64(h.Height))
+	binary.Write(buffer, binary.BigEndian, uint64(h.Nonce))
+
+	buffer.Flush()
+
+	return result.Bytes(), nil
 }
 
 func NewHeader(prevHash c.Hash, height uint64, timestamp time.Time) *Header {

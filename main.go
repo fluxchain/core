@@ -8,12 +8,15 @@ import (
 	"github.com/fluxchain/core/blockchain/block"
 	"github.com/fluxchain/core/blockchain/storage"
 	"github.com/fluxchain/core/blockchain/transaction"
+	"github.com/fluxchain/core/consensus"
+	c "github.com/fluxchain/core/crypto"
 	"github.com/fluxchain/core/parameters"
 )
 
 func main() {
 	var err error
 	var coinbase *transaction.Transaction
+	var hash c.Hash
 
 	err = storage.OpenDatabase("database.db")
 	if err != nil {
@@ -39,6 +42,13 @@ func main() {
 		panic(err)
 	}
 	genesisBlock := block.NewGenesisBlock(time.Now(), genesisBody)
+
+	hash, err = consensus.GeneratePoW(genesisBlock.Header, parameters.Current().MinimumPoW)
+	if err != nil {
+		panic(err)
+	}
+	genesisBlock.Header.Hash = hash
+
 	err = mainchain.AddBlock(genesisBlock)
 	if err != nil {
 		panic(err)
@@ -56,6 +66,13 @@ func main() {
 	}
 
 	nextBlock := block.NewBlock(genesisBlock, time.Now(), body)
+
+	hash, err = consensus.GeneratePoW(nextBlock.Header, parameters.Current().MinimumPoW)
+	if err != nil {
+		panic(err)
+	}
+	nextBlock.Header.Hash = hash
+
 	err = mainchain.AddBlock(nextBlock)
 	if err != nil {
 		panic(err)

@@ -8,6 +8,8 @@ import (
 	"log"
 
 	"github.com/fluxchain/core/blockchain/block"
+	"github.com/fluxchain/core/consensus"
+	"github.com/fluxchain/core/parameters"
 )
 
 type Blockchain struct {
@@ -53,7 +55,7 @@ func (b *Blockchain) AddBlock(currentBlock *block.Block) error {
 // PoW.
 func (b *Blockchain) ValidateBlock(currentBlock *block.Block) error {
 	// check if PoW checks out
-	powValid, err := currentBlock.Header.ValidatePOW()
+	powValid, err := consensus.ValidatePOW(currentBlock.Header, parameters.Current().MinimumPoW)
 	if err != nil {
 		return err
 	}
