@@ -32,7 +32,7 @@ func main() {
 	parameters.Set(parameters.Main)
 	mainchain := blockchain.NewBlockchain()
 
-	genesisBlock, err := parameters.Main.GenesisBlock()
+	genesisBlock, err := parameters.Current().GenesisBlock()
 	if err != nil {
 		panic(err)
 	}
