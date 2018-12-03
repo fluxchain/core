@@ -32,22 +32,10 @@ func main() {
 	parameters.Set(parameters.Main)
 	mainchain := blockchain.NewBlockchain()
 
-	coinbase, err = transaction.NewCoinbase("rsyBe3AcPF61VFMi48phGcfsLyvho4mr", 2000, time.Now())
+	genesisBlock, err := parameters.Main.GenesisBlock()
 	if err != nil {
 		panic(err)
 	}
-	genesisBody := block.NewBody()
-	err = genesisBody.AddTransaction(coinbase)
-	if err != nil {
-		panic(err)
-	}
-	genesisBlock := block.NewGenesisBlock(time.Now(), genesisBody)
-
-	hash, err = consensus.GeneratePoW(genesisBlock.Header, parameters.Current().MinimumPoW)
-	if err != nil {
-		panic(err)
-	}
-	genesisBlock.Header.Hash = hash
 
 	err = mainchain.AddBlock(genesisBlock)
 	if err != nil {

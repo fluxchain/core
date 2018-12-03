@@ -1,10 +1,15 @@
 package parameters
 
+import "github.com/fluxchain/core/blockchain/block"
+
 var current *Parameters = nil
 
 type Parameters struct {
-	MinimumPoW [32]byte
+	MinimumPoW   [32]byte
+	GenesisBlock GenesisBlockFunc
 }
+
+type GenesisBlockFunc func() (*block.Block, error)
 
 func IsSet() bool {
 	return current != nil
