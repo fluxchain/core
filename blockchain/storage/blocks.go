@@ -26,16 +26,37 @@ func (r *blockRepository) Store(b *block.Block) error {
 	return err
 }
 
-func (r *blockRepository) Get(hash c.Hash) error {
-	return db.View(func(tx *bolt.Tx) error {
+func (r *blockRepository) Get(hash c.Hash) (*block.Block, error) {
+	var result *block.Block
+	err := db.View(func(tx *bolt.Tx) error {
+		var err error
 		b := tx.Bucket([]byte(BLOCK_BUCKET))
-		b.Get(hash)
+
+		data := b.Get(hash)
+		result, err = deserializeBlock(data)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
+
+	return result, err
 }
 
 func serializeBlock(b *block.Block) ([]byte, error) {
 	return json.Marshal(b)
+}
+
+func deserializeBlock(data []byte) (*block.Block, error) {
+	var result *block.Block
+
+	err := json.Unmarshal(data, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 var BlockRepository *blockRepository
