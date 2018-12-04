@@ -2,19 +2,33 @@ package blockchain
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"io"
-	"log"
 
 	"github.com/fluxchain/core/blockchain/block"
+	"github.com/fluxchain/core/blockchain/storage"
 	"github.com/fluxchain/core/consensus"
 	"github.com/fluxchain/core/parameters"
 )
 
 type Blockchain struct {
-	Blocks []*block.Block `json:"blocks"`
-	Tip    *block.Block   `json:"-"`
+	Tip *block.Block
+}
+
+func (b *Blockchain) HasGenesis() (bool, error) {
+	return storage.HasBlockHeight(0)
+}
+
+func (b *Blockchain) Hydrate() error {
+	storage.WalkBlocks(func(currentBlock *block.Block) error {
+		// ugly hack until I get the data sorted
+		if currentBlock.Header.Height > b.Tip.Header.Height {
+			b.Tip = currentBlock
+		}
+
+		return nil
+	})
+
+	return nil
 }
 
 // Adds a block to the chain if it passes some validation.
@@ -44,9 +58,12 @@ func (b *Blockchain) AddBlock(currentBlock *block.Block) error {
 		return err
 	}
 
-	log.Printf("adding block: %v", currentBlock)
-	b.Blocks = append(b.Blocks, currentBlock)
+	if err := storage.StoreBlock(currentBlock); err != nil {
+		return err
+	}
+
 	b.Tip = currentBlock
+	fmt.Printf("Updated tip %v\n", b.Tip)
 
 	return nil
 }
@@ -66,13 +83,6 @@ func (b *Blockchain) ValidateBlock(currentBlock *block.Block) error {
 	}
 
 	return nil
-}
-
-// Serializes the chain to JSON and writes it to the passed in writer.
-func (b *Blockchain) Serialize(w io.Writer) error {
-	enc := json.NewEncoder(w)
-
-	return enc.Encode(b)
 }
 
 // Creates an instance of a new chain.
