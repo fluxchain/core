@@ -11,15 +11,20 @@ import (
 )
 
 type Blockchain struct {
-	Tip *block.Block
+	Genesis *block.Block
+	Tip     *block.Block
 }
 
-func (b *Blockchain) HasGenesis() (bool, error) {
-	return storage.HasBlockHeight(0)
+func (b *Blockchain) HasGenesis() bool {
+	return b.Genesis != nil
 }
 
 func (b *Blockchain) Hydrate() error {
 	storage.WalkBlocks(func(currentBlock *block.Block) error {
+		if currentBlock.Header.Height == 0 {
+			b.Genesis = currentBlock
+		}
+
 		// ugly hack until I get the data sorted
 		if currentBlock.Header.Height > b.Tip.Header.Height {
 			b.Tip = currentBlock

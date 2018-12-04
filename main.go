@@ -24,12 +24,7 @@ func main() {
 	parameters.Set(parameters.UnitTest)
 	mainchain := blockchain.NewBlockchain()
 
-	hasGenesis, err := mainchain.HasGenesis()
-	if err != nil {
-		panic(err)
-	}
-
-	if !hasGenesis {
+	if !mainchain.HasGenesis() {
 		genesis, err := parameters.Current().GenesisBlock()
 
 		if err != nil {
