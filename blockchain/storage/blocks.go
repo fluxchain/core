@@ -1,11 +1,14 @@
 package storage
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/json"
+	"fmt"
 
+	"github.com/boltdb/bolt"
 	"github.com/fluxchain/core/blockchain/block"
 	c "github.com/fluxchain/core/crypto"
-	bolt "go.etcd.io/bbolt"
 )
 
 func StoreBlock(b *block.Block) error {
@@ -17,6 +20,21 @@ func StoreBlock(b *block.Block) error {
 	err = db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(BLOCK_BUCKET))
 		err := bucket.Put([]byte(b.Header.Hash), serialized)
+
+		return err
+	})
+	if err != nil {
+		return err
+	}
+
+	buffer := new(bytes.Buffer)
+	if err := binary.Write(buffer, binary.BigEndian, b.Header.Height); err != nil {
+		return err
+	}
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(BLOCK_HEIGHT_BUCKET))
+		err := bucket.Put(buffer.Bytes(), b.Header.Hash)
 
 		return err
 	})
@@ -40,6 +58,31 @@ func GetBlock(hash c.Hash) (*block.Block, error) {
 	})
 
 	return result, err
+}
+
+func GetBlockByHeight(height uint64) (*block.Block, error) {
+	var hash []byte
+
+	buffer := new(bytes.Buffer)
+	if err := binary.Write(buffer, binary.BigEndian, height); err != nil {
+		return nil, err
+	}
+
+	db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(BLOCK_HEIGHT_BUCKET))
+
+		hash = b.Get(buffer.Bytes())
+
+		fmt.Printf("Got hash: %v\n", hash)
+
+		return nil
+	})
+
+	if hash == nil {
+		return nil, nil
+	}
+
+	return getBlockByIndex(hash)
 }
 
 func WalkBlocks(walkFn func(*block.Block) error) {
