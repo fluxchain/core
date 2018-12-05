@@ -19,7 +19,7 @@ func GeneratePoW(header *block.Header, target [32]byte) (c.Hash, error) {
 			return nil, err
 		}
 
-		if result := bytes.Compare(result, target[:]); result <= 0 {
+		if bytes.Compare(result, target[:]) <= 0 {
 			break
 		}
 
@@ -33,6 +33,10 @@ func GeneratePoW(header *block.Header, target [32]byte) (c.Hash, error) {
 // the blockheader hash.
 func ValidatePOW(header *block.Header, target [32]byte) (bool, error) {
 	headerHash := header.Hash
+	if bytes.Compare(headerHash, target[:]) > 0 {
+		return false, nil
+	}
+
 	calculatedHash, err := header.CalculateHash()
 	if err != nil {
 		return false, err
