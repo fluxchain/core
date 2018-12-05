@@ -1,8 +1,6 @@
 package storage
 
 import (
-	"bytes"
-	"encoding/binary"
 	"encoding/json"
 
 	"github.com/fluxchain/core/blockchain/block"
@@ -26,7 +24,7 @@ func StoreBlock(b *block.Block) error {
 	return err
 }
 
-func GetBlockByHash(hash c.Hash) (*block.Block, error) {
+func GetBlock(hash c.Hash) (*block.Block, error) {
 	var result *block.Block
 	err := db.View(func(tx *bolt.Tx) error {
 		var err error
@@ -42,26 +40,6 @@ func GetBlockByHash(hash c.Hash) (*block.Block, error) {
 	})
 
 	return result, err
-}
-
-func GetBlockByHeight(height uint64) (*block.Block, error) {
-	buffer := new(bytes.Buffer)
-
-	if err := binary.Write(buffer, binary.BigEndian, height); err != nil {
-		return nil, err
-	}
-
-	return getBlockByIndex(buffer.Bytes())
-}
-
-func HasBlockHeight(height uint64) (bool, error) {
-	buffer := new(bytes.Buffer)
-
-	if err := binary.Write(buffer, binary.BigEndian, height); err != nil {
-		return false, err
-	}
-
-	return hasBlockIndex(buffer.Bytes())
 }
 
 func WalkBlocks(walkFn func(*block.Block) error) {
