@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"time"
@@ -54,7 +55,7 @@ func (tx Transaction) CalculateHash() ([]byte, error) {
 
 // Figures out if two transactions are the same, used for the merkletree lib.
 func (t Transaction) Equals(other merkletree.Content) (bool, error) {
-	return t.Hash.String() == other.(Transaction).Hash.String(), nil
+	return bytes.Compare(t.Hash, other.(Transaction).Hash) == 0, nil
 }
 
 // Creates a coinbase transaction which requires no inputs.
