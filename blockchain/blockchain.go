@@ -27,9 +27,10 @@ func (b *Blockchain) HasGenesis() bool {
 	return true
 }
 
+// Walks over all the blocks in storage, validating them, gathering some statistics
+// and setting the tip to the appropriate state.
 func (b *Blockchain) Hydrate() error {
 	storage.WalkBlocks(func(currentBlock *block.Block) error {
-		// ugly hack until I get the data sorted
 		if b.Tip == nil || currentBlock.Header.Height > b.Tip.Header.Height {
 			b.Tip = currentBlock
 		}

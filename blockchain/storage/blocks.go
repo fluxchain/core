@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"fmt"
 
 	"github.com/boltdb/bolt"
 	"github.com/fluxchain/core/blockchain/block"
@@ -73,8 +72,6 @@ func GetBlockByHeight(height uint64) (*block.Block, error) {
 
 		hash = b.Get(buffer.Bytes())
 
-		fmt.Printf("Got hash: %v\n", hash)
-
 		return nil
 	})
 
@@ -87,12 +84,12 @@ func GetBlockByHeight(height uint64) (*block.Block, error) {
 
 func WalkBlocks(walkFn func(*block.Block) error) {
 	db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(BLOCK_BUCKET))
+		b := tx.Bucket([]byte(BLOCK_HEIGHT_BUCKET))
 
 		c := b.Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
-			block, err := deserializeBlock(v)
+			block, err := getBlockByIndex(v)
 			if err != nil {
 				return err
 			}
