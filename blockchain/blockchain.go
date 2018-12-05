@@ -72,7 +72,7 @@ func (b *Blockchain) AddBlock(currentBlock *block.Block) error {
 	logrus.WithFields(logrus.Fields{
 		"hash":   currentBlock.Header.Hash,
 		"height": currentBlock.Header.Height,
-	}).Debug("added block")
+	}).Info("added block")
 
 	b.SetTip(currentBlock)
 
