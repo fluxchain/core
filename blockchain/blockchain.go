@@ -27,6 +27,15 @@ func (b *Blockchain) HasGenesis() (bool, error) {
 	return true, nil
 }
 
+func (b *Blockchain) SetTip(tip *block.Block) {
+	logrus.WithFields(logrus.Fields{
+		"height": tip.Header.Height,
+		"hash":   tip.Header.Hash,
+	}).Debug("setting tip")
+
+	b.Tip = tip
+}
+
 // Walks over all the blocks in storage, validating them, gathering some statistics
 // and setting the tip to the appropriate state.
 func (b *Blockchain) Hydrate() error {
@@ -41,12 +50,7 @@ func (b *Blockchain) Hydrate() error {
 		}
 
 		if b.Tip == nil || currentBlock.Header.Height > b.Tip.Header.Height {
-			logrus.WithFields(logrus.Fields{
-				"height": currentBlock.Header.Height,
-				"hash":   currentBlock.Header.Hash,
-			}).Debug("setting tip")
-
-			b.Tip = currentBlock
+			b.SetTip(currentBlock)
 		}
 
 		return nil
@@ -65,12 +69,12 @@ func (b *Blockchain) AddBlock(currentBlock *block.Block) error {
 		return err
 	}
 
-	b.Tip = currentBlock
-
 	logrus.WithFields(logrus.Fields{
 		"hash":   currentBlock.Header.Hash,
 		"height": currentBlock.Header.Height,
 	}).Debug("added block")
+
+	b.SetTip(currentBlock)
 
 	return nil
 }
