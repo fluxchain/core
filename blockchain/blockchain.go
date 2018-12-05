@@ -31,6 +31,9 @@ func (b *Blockchain) HasGenesis() bool {
 // and setting the tip to the appropriate state.
 func (b *Blockchain) Hydrate() error {
 	storage.WalkBlocks(func(currentBlock *block.Block) error {
+		if err := b.ValidateBlock(currentBlock); err != nil {
+			return err
+		}
 
 		if b.Tip == nil || currentBlock.Header.Height > b.Tip.Header.Height {
 			b.Tip = currentBlock
