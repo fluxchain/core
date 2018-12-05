@@ -46,13 +46,25 @@ func (h Header) SerializeForProof() ([]byte, error) {
 	var result bytes.Buffer
 	buffer := bufio.NewWriter(&result)
 
-	buffer.Write(h.PrevHash)
-	buffer.Write(h.MerkleRoot)
+	if _, err := buffer.Write(h.PrevHash); err != nil {
+		return nil, err
+	}
 
-	binary.Write(buffer, binary.BigEndian, uint64(h.Height))
-	binary.Write(buffer, binary.BigEndian, uint64(h.Nonce))
+	if _, err := buffer.Write(h.MerkleRoot); err != nil {
+		return nil, err
+	}
 
-	buffer.Flush()
+	if err := binary.Write(buffer, binary.BigEndian, uint64(h.Height)); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(buffer, binary.BigEndian, uint64(h.Nonce)); err != nil {
+		return nil, err
+	}
+
+	if err := buffer.Flush(); err != nil {
+		return nil, err
+	}
 
 	return result.Bytes(), nil
 }

@@ -8,34 +8,44 @@ import (
 	"github.com/fluxchain/core/blockchain/storage"
 	"github.com/fluxchain/core/consensus"
 	"github.com/fluxchain/core/parameters"
+	"github.com/sirupsen/logrus"
 )
 
 type Blockchain struct {
 	Tip *block.Block
 }
 
-func (b *Blockchain) HasGenesis() bool {
+func (b *Blockchain) HasGenesis() (bool, error) {
 	genesis, err := storage.GetBlockByHeight(0)
 	if err != nil {
-		panic(err)
+		return false, err
 	}
-
 	if genesis == nil {
-		return false
+		return false, nil
 	}
 
-	return true
+	return true, nil
 }
 
 // Walks over all the blocks in storage, validating them, gathering some statistics
 // and setting the tip to the appropriate state.
 func (b *Blockchain) Hydrate() error {
 	storage.WalkBlocks(func(currentBlock *block.Block) error {
+		logrus.WithFields(logrus.Fields{
+			"height": currentBlock.Header.Height,
+			"hash":   currentBlock.Header.Hash,
+		}).Trace("hydrate looping over local block")
+
 		if err := b.ValidateBlock(currentBlock); err != nil {
 			return err
 		}
 
 		if b.Tip == nil || currentBlock.Header.Height > b.Tip.Header.Height {
+			logrus.WithFields(logrus.Fields{
+				"height": currentBlock.Header.Height,
+				"hash":   currentBlock.Header.Hash,
+			}).Debug("setting tip")
+
 			b.Tip = currentBlock
 		}
 
@@ -56,7 +66,11 @@ func (b *Blockchain) AddBlock(currentBlock *block.Block) error {
 	}
 
 	b.Tip = currentBlock
-	fmt.Printf("Updated tip %v\n", b.Tip)
+
+	logrus.WithFields(logrus.Fields{
+		"hash":   currentBlock.Header.Hash,
+		"height": currentBlock.Header.Height,
+	}).Debug("added block")
 
 	return nil
 }
