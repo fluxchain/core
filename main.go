@@ -47,7 +47,7 @@ func main() {
 		}
 
 		body := block.NewBody()
-		if body.AddTransaction(coinbase); err != nil {
+		if err := body.AddTransaction(coinbase); err != nil {
 			panic(err)
 		}
 
@@ -58,7 +58,7 @@ func main() {
 		}
 		nextBlock.Header.Hash = hash
 
-		if mainchain.AddBlock(nextBlock); err != nil {
+		if err := mainchain.AddBlock(nextBlock); err != nil {
 			panic(err)
 		}
 	}
