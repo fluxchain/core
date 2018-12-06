@@ -15,6 +15,7 @@ type Blockchain struct {
 	Tip *block.Block
 }
 
+// looks up the genesis block and return whether or not it can be found.
 func (b *Blockchain) HasGenesis() (bool, error) {
 	genesis, err := storage.GetBlockByHeight(0)
 	if err != nil {
@@ -27,6 +28,7 @@ func (b *Blockchain) HasGenesis() (bool, error) {
 	return true, nil
 }
 
+// sets the tip of the blockchain to the specified block.
 func (b *Blockchain) SetTip(tip *block.Block) {
 	logrus.WithFields(logrus.Fields{
 		"height": tip.Header.Height,

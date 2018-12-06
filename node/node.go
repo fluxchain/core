@@ -16,6 +16,9 @@ type Node struct {
 	Chain *blockchain.Blockchain
 }
 
+// bootstraps the node initing the specified database, setting the
+// appropriate parameters, storing the genesis block if not available
+// and cycling over all the blocks in the database.
 func (n *Node) Bootstrap(databasePath string, currentParameters *parameters.Parameters) {
 	logrus.WithFields(logrus.Fields{
 		"path": databasePath,
@@ -37,6 +40,8 @@ func (n *Node) Bootstrap(databasePath string, currentParameters *parameters.Para
 		logrus.Fatal("error looking up genesis existence", err)
 	}
 
+	// if the genesis isn't available in the local database, fetch one from the
+	// selected parameters and store it.
 	if !hasGenesis {
 		logrus.Info("database does not seem to include genesis, adding it")
 
@@ -55,10 +60,12 @@ func (n *Node) Bootstrap(databasePath string, currentParameters *parameters.Para
 	}
 }
 
+// clean up the state and close the database, connections and outstanding requests
 func (n *Node) Teardown() {
 	storage.CloseDatabase()
 }
 
+// mines an abritrary amount of blocks in accordance with the selected chain parameters
 func (n *Node) Mine(amount uint64) {
 	for i := 0; i < 10; i++ {
 		coinbase, err := transaction.NewCoinbase("rsyBe3AcPF61VFMi48phGcfsLyvho4mr", 1500, time.Now())

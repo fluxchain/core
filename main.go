@@ -17,5 +17,6 @@ func main() {
 	n := node.New()
 	n.Bootstrap("database.db", parameters.Main)
 	defer n.Teardown()
+
 	n.Mine(50)
 }
