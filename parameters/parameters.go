@@ -5,6 +5,7 @@ import "github.com/fluxchain/core/blockchain/block"
 var current *Parameters = nil
 
 type Parameters struct {
+	Name         string
 	MinimumPoW   [32]byte
 	GenesisBlock GenesisBlockFunc
 }
