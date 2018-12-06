@@ -24,7 +24,6 @@ func (n *Node) Bootstrap(databasePath string) {
 	if err := storage.OpenDatabase(databasePath); err != nil {
 		logrus.Fatal("could not open local database", err)
 	}
-	defer storage.CloseDatabase()
 
 	if err := storage.Migrate(); err != nil {
 		logrus.Fatal("could not migrate database structure to local database: ", err)
@@ -54,6 +53,10 @@ func (n *Node) Bootstrap(databasePath string) {
 	if err := n.Chain.Hydrate(); err != nil {
 		logrus.Fatal("could not read local database during hydrate: ", err)
 	}
+}
+
+func (n *Node) Teardown() {
+	storage.CloseDatabase()
 }
 
 func (n *Node) Mine(amount uint64) {
