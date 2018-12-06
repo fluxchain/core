@@ -16,7 +16,7 @@ type Node struct {
 	Chain *blockchain.Blockchain
 }
 
-func (n *Node) Bootstrap(databasePath string) {
+func (n *Node) Bootstrap(databasePath string, currentParameters *parameters.Parameters) {
 	logrus.WithFields(logrus.Fields{
 		"path": databasePath,
 	}).Info("opening database")
@@ -29,7 +29,7 @@ func (n *Node) Bootstrap(databasePath string) {
 		logrus.Fatal("could not migrate database structure to local database: ", err)
 	}
 
-	parameters.Set(parameters.Main)
+	parameters.Set(currentParameters)
 	n.Chain = blockchain.NewBlockchain()
 
 	hasGenesis, err := n.Chain.HasGenesis()
