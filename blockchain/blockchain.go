@@ -11,6 +11,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var Active *Blockchain
+
 type Blockchain struct {
 	Tip *block.Block
 }

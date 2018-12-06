@@ -3,11 +3,13 @@ package rpc
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/fluxchain/core/blockchain"
 )
 
 func GetInfo(w http.ResponseWriter, req *http.Request) {
 	info := &nodeInfo{
-		Height: 100,
+		Height: blockchain.Active.Tip.Header.Height,
 	}
 
 	json.NewEncoder(w).Encode(info)

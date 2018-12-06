@@ -17,7 +17,6 @@ import (
 
 type Node struct {
 	RPCRouter *mux.Router
-	Chain     *blockchain.Blockchain
 }
 
 // bootstraps the node initing the specified database, setting the
@@ -37,9 +36,9 @@ func (n *Node) Bootstrap(databasePath string, currentParameters *parameters.Para
 	}
 
 	parameters.Set(currentParameters)
-	n.Chain = blockchain.NewBlockchain()
+	blockchain.Active = blockchain.NewBlockchain()
 
-	hasGenesis, err := n.Chain.HasGenesis()
+	hasGenesis, err := blockchain.Active.HasGenesis()
 	if err != nil {
 		logrus.Fatal("error looking up genesis existence", err)
 	}
@@ -54,12 +53,12 @@ func (n *Node) Bootstrap(databasePath string, currentParameters *parameters.Para
 			logrus.Fatal("could not create genesis block from selected parameters: ", err)
 		}
 
-		if err := n.Chain.AddGenesisBlock(genesis); err != nil {
+		if err := blockchain.Active.AddGenesisBlock(genesis); err != nil {
 			logrus.Fatal("could not add genesis block to local database: ", err)
 		}
 	}
 
-	if err := n.Chain.Hydrate(); err != nil {
+	if err := blockchain.Active.Hydrate(); err != nil {
 		logrus.Fatal("could not read local database during hydrate: ", err)
 	}
 }
@@ -82,14 +81,14 @@ func (n *Node) Mine(amount uint64) {
 			logrus.Error("could not add coinbase transaction to block body: ", err)
 		}
 
-		nextBlock := block.NewBlock(n.Chain.Tip, time.Now(), body)
+		nextBlock := block.NewBlock(blockchain.Active.Tip, time.Now(), body)
 		hash, err := consensus.GeneratePoW(nextBlock.Header, parameters.Current().MinimumPoW)
 		if err != nil {
 			logrus.Error("could not generate PoW for block: ", err)
 		}
 		nextBlock.Header.Hash = hash
 
-		if err := n.Chain.AddBlock(nextBlock); err != nil {
+		if err := blockchain.Active.AddBlock(nextBlock); err != nil {
 			logrus.Error("could not add newly mined block to local chain: ", err)
 		}
 	}
