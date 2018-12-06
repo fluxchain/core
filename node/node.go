@@ -16,10 +16,12 @@ type Node struct {
 	Chain *blockchain.Blockchain
 }
 
-func (n *Node) Bootstrap() {
-	logrus.Info("starting flux...")
-	logrus.Info("opening database")
-	if err := storage.OpenDatabase("database.db"); err != nil {
+func (n *Node) Bootstrap(databasePath string) {
+	logrus.WithFields(logrus.Fields{
+		"path": databasePath,
+	}).Info("opening database")
+
+	if err := storage.OpenDatabase(databasePath); err != nil {
 		logrus.Fatal("could not open local database", err)
 	}
 	defer storage.CloseDatabase()

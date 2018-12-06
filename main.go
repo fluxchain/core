@@ -11,7 +11,9 @@ func main() {
 	})
 	logrus.SetLevel(logrus.DebugLevel)
 
+	logrus.Info("starting flux...")
+
 	n := node.New()
-	n.Bootstrap()
+	n.Bootstrap("database.db")
 	n.Mine(50)
 }
