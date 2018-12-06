@@ -21,12 +21,12 @@ func main() {
 	logrus.Info("starting flux...")
 	logrus.Info("opening database")
 	if err := storage.OpenDatabase("database.db"); err != nil {
-		logrus.Error("could not open local database", err)
+		logrus.Fatal("could not open local database", err)
 	}
 	defer storage.CloseDatabase()
 
 	if err := storage.Migrate(); err != nil {
-		logrus.Error("could not migrate database structure to local database: ", err)
+		logrus.Fatal("could not migrate database structure to local database: ", err)
 	}
 
 	parameters.Set(parameters.Main)
@@ -34,7 +34,7 @@ func main() {
 
 	hasGenesis, err := mainchain.HasGenesis()
 	if err != nil {
-		logrus.Error("error looking up genesis existence", err)
+		logrus.Fatal("error looking up genesis existence", err)
 	}
 
 	if !hasGenesis {
@@ -42,16 +42,16 @@ func main() {
 
 		genesis, err := parameters.Current().GenesisBlock()
 		if err != nil {
-			logrus.Error("could not create genesis block from selected parameters: ", err)
+			logrus.Fatal("could not create genesis block from selected parameters: ", err)
 		}
 
 		if err := mainchain.AddBlock(genesis); err != nil {
-			logrus.Error("could not add genesis block to local database: ", err)
+			logrus.Fatal("could not add genesis block to local database: ", err)
 		}
 	}
 
 	if err := mainchain.Hydrate(); err != nil {
-		logrus.Error("could not read local database during hydrate: ", err)
+		logrus.Fatal("could not read local database during hydrate: ", err)
 	}
 
 	for i := 0; i < 10; i++ {
