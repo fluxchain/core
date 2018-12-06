@@ -18,5 +18,8 @@ func main() {
 	n.Bootstrap("database.db", parameters.Main)
 	defer n.Teardown()
 
+	n.RegisterRPC()
+	n.ServeRPC(":3030")
+
 	n.Mine(50)
 }
