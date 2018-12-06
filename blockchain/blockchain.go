@@ -58,6 +58,24 @@ func (b *Blockchain) Hydrate() error {
 }
 
 // Adds a block to the chain if it passes some validation.
+func (b *Blockchain) AddGenesisBlock(currentBlock *block.Block) error {
+	if err := b.ValidateBlock(currentBlock); err != nil {
+		return err
+	}
+
+	if err := storage.StoreBlock(currentBlock); err != nil {
+		return err
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"hash":   currentBlock.Header.Hash,
+		"height": currentBlock.Header.Height,
+	}).Info("added genesis block")
+
+	return nil
+}
+
+// Adds a block to the chain if it passes some validation.
 func (b *Blockchain) AddBlock(currentBlock *block.Block) error {
 	if err := b.ValidateBlock(currentBlock); err != nil {
 		return err

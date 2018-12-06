@@ -45,7 +45,7 @@ func main() {
 			logrus.Fatal("could not create genesis block from selected parameters: ", err)
 		}
 
-		if err := mainchain.AddBlock(genesis); err != nil {
+		if err := mainchain.AddGenesisBlock(genesis); err != nil {
 			logrus.Fatal("could not add genesis block to local database: ", err)
 		}
 	}
