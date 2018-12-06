@@ -70,7 +70,7 @@ func (n *Node) Teardown() {
 
 // mines an abritrary amount of blocks in accordance with the selected chain parameters
 func (n *Node) Mine(amount uint64) {
-	for i := 0; i < 10; i++ {
+	for i := uint64(0); i < amount; i++ {
 		coinbase, err := transaction.NewCoinbase("rsyBe3AcPF61VFMi48phGcfsLyvho4mr", 1500, time.Now())
 		if err != nil {
 			logrus.Error("could not create coinbase for block: ", err)
