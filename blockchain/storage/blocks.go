@@ -82,8 +82,8 @@ func GetBlockByHeight(height uint64) (*block.Block, error) {
 	return getBlockByIndex(hash)
 }
 
-func WalkBlocks(walkFn func(*block.Block) error) {
-	db.View(func(tx *bolt.Tx) error {
+func WalkBlocks(walkFn func(*block.Block) error) error {
+	return db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(BLOCK_HEIGHT_BUCKET))
 
 		c := b.Cursor()

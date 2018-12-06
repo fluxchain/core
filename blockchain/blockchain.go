@@ -39,7 +39,7 @@ func (b *Blockchain) SetTip(tip *block.Block) {
 // Walks over all the blocks in storage, validating them, gathering some statistics
 // and setting the tip to the appropriate state.
 func (b *Blockchain) Hydrate() error {
-	storage.WalkBlocks(func(currentBlock *block.Block) error {
+	return storage.WalkBlocks(func(currentBlock *block.Block) error {
 		logrus.WithFields(logrus.Fields{
 			"height": currentBlock.Header.Height,
 			"hash":   currentBlock.Header.Hash,
@@ -55,8 +55,6 @@ func (b *Blockchain) Hydrate() error {
 
 		return nil
 	})
-
-	return nil
 }
 
 // Adds a block to the chain if it passes some validation.
