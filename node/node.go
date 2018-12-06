@@ -98,6 +98,7 @@ func (n *Node) Mine(amount uint64) {
 func (n *Node) RegisterRPC() {
 	n.RPCRouter = mux.NewRouter()
 	n.RPCRouter.HandleFunc("/info", rpc.GetInfo)
+	n.RPCRouter.HandleFunc("/block/{block}", rpc.GetBlock)
 }
 
 // binds RPC router to specified address and port
