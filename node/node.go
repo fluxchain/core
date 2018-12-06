@@ -99,6 +99,7 @@ func (n *Node) RegisterRPC() {
 	n.RPCRouter = mux.NewRouter()
 	n.RPCRouter.HandleFunc("/info", rpc.GetInfo)
 	n.RPCRouter.HandleFunc("/block/{block}", rpc.GetBlock)
+	n.RPCRouter.HandleFunc("/block/height/{block}", rpc.GetBlockHeight)
 }
 
 // binds RPC router to specified address and port
