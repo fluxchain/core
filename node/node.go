@@ -9,8 +9,8 @@ import (
 	"github.com/fluxchain/core/blockchain/storage"
 	"github.com/fluxchain/core/blockchain/transaction"
 	"github.com/fluxchain/core/consensus"
-	"github.com/fluxchain/core/node/rpc"
 	"github.com/fluxchain/core/parameters"
+	"github.com/fluxchain/core/rpc"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
